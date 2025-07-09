@@ -54,7 +54,8 @@ public class MemberPersistenceAdapter implements MemberPersistencePort {
                 .param("createdAt", member.getCreatedAt())
                 .update(keyHolder);
 
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Number key = (Number) keyHolder.getKeys().get("ID");
+        return Objects.requireNonNull(key).longValue();
     }
 
     private void updateMember(Member member) {
