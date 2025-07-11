@@ -10,6 +10,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.util.Objects;
+
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
     private final MemberUseCase memberUseCase;
@@ -28,10 +30,10 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
     public Object resolveArgument(MethodParameter parameter,
                                   ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest,
-                                  WebDataBinderFactory binderFactory) throws Exception {
+                                  WebDataBinderFactory binderFactory) {
 
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
-        Long memberId = (Long) request.getAttribute("memberId");
+        Long memberId = (Long) Objects.requireNonNull(request).getAttribute("memberId");
         String email = (String) request.getAttribute("email");
 
         if (memberId == null || email == null) {

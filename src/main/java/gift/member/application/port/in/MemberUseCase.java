@@ -12,4 +12,6 @@ public interface MemberUseCase {
     MemberResponse createMember(CreateMemberRequest request);
     MemberResponse updateMember(Long id, UpdateMemberRequest request);
     void deleteMember(Long id);
+
+    MemberResponse getMemberById(Long memberId);
 } 

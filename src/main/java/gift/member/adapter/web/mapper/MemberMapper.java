@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class MemberMapper {
 
-    public Member toEntity(CreateMemberRequest request) {
+    public static Member toEntity(CreateMemberRequest request) {
         return Member.create(request.email(), request.password());
     }
 
-    public Member toEntity(Member existingMember, UpdateMemberRequest request) {
+    public static Member toEntity(Member existingMember, UpdateMemberRequest request) {
         return Member.of(
                 existingMember.id(),
                 request.email() == null ? existingMember.email() : request.email(),
@@ -23,7 +23,7 @@ public class MemberMapper {
         );
     }
 
-    public MemberResponse toResponse(Member member) {
+    public static MemberResponse toResponse(Member member) {
         return new MemberResponse(
                 member.id(),
                 member.email(),
