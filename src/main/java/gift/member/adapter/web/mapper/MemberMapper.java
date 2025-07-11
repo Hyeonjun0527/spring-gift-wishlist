@@ -16,9 +16,9 @@ public class MemberMapper {
     public Member toEntity(Member existingMember, UpdateMemberRequest request) {
         return Member.of(
                 existingMember.id(),
-                request.email() != null ? request.email() : existingMember.email(),
-                request.password() != null ? request.password() : existingMember.password(),
-                request.role() != null ? request.role() : existingMember.role(),
+                request.email() == null ? existingMember.email() : request.email(),
+                request.password() == null ? existingMember.password() : request.password(),
+                request.role() == null ? existingMember.role() : request.role(),
                 existingMember.createdAt()
         );
     }
