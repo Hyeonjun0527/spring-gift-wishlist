@@ -92,3 +92,15 @@ DELETE /api/products/{productId}
    - 토큰 검증
    - 토큰 정보 추출
 
+## 3단계 - 위시 리스트
+
+### 기능 목록
+1. 위시리스트에 상품 추가
+2. 위시리스트에 등록된 상품 목록 조회
+3. 위시 리스트에 담긴 상품을 삭제
+
+### 참고 사항
+- 로그인 후 받은 토큰을 사용하여 사용자별 위시 리스트 기능을 구현한다.
+- 사용자 정보는 요청 헤더의 Authorization 필드를 사용한다.
+   - 예시: `Authorization: Bearer <token>`
+- HandlerMethodArgumentResolver를 활용해 컨트롤러 메서드에 로그인 회원 객체를 주입한다.

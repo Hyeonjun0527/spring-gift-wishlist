@@ -12,3 +12,13 @@ CREATE TABLE Member(
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE Wish (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    member_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES Member(id),
+    FOREIGN KEY (product_id) REFERENCES Product(id),
+    UNIQUE (member_id, product_id)
+);

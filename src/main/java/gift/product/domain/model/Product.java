@@ -3,11 +3,11 @@ package gift.product.domain.model;
 public class Product {
 
     private final Long id;
-    private String name;
-    private int price;
-    private String imageUrl;
+    private final String name;
+    private final int price;
+    private final String imageUrl;
 
-    public Product(Long id, String name, int price, String imageUrl) {
+    private Product(Long id, String name, int price, String imageUrl) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -33,4 +33,4 @@ public class Product {
     public String getImageUrl() {
         return imageUrl;
     }
-} 
+}

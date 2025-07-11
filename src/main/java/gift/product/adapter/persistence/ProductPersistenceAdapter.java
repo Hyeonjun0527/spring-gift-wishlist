@@ -76,14 +76,14 @@ public class ProductPersistenceAdapter implements ProductPersistencePort {
         Long id = product.getId();
         if (id == null) {
             id = insertProduct(product);
-            return new Product(id,
+            return Product.of(id,
                     product.getName(),
                     product.getPrice(),
                     product.getImageUrl());
         }
         updateProduct(product);
 
-        return new Product(id,
+        return Product.of(id,
                 product.getName(),
                 product.getPrice(),
                 product.getImageUrl());
@@ -138,4 +138,4 @@ public class ProductPersistenceAdapter implements ProductPersistencePort {
                 .optional()
                 .isPresent();
     }
-} 
+}
