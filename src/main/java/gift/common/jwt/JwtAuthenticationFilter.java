@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> SKIP_PATHS = Arrays.asList(
             "/",
             "/login",
+            // "/admin", // 관리자 페이지는 필터에서 직접 처리하도록 SKIP_PATHS에서 제외
             "/health",
             "/actuator",
             "/css/",
@@ -37,7 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/images/",
             "/favicon.ico",
             "/api/members/register",
-            "/api/members/login"
+            "/api/members/login",
+            "/h2-console",
+            "/h2-console/"
     );
     private final JwtTokenPort jwtTokenPort;
     private final ObjectMapper objectMapper;
@@ -64,8 +67,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = jwtTokenPort.resolveToken(request);
             if (token == null) {
-                log.warn("Authorization 헤더에 JWT 토큰이 없음");
-                sendUnauthorizedResponse(request, response, "인증이 필요합니다. Authorization 헤더에 JWT 토큰을 포함해주세요.");
+                String acceptHeader = request.getHeader("Accept");
+                boolean isPageRequest = acceptHeader != null && acceptHeader.contains("text/html");
+
+                if (isPageRequest && !requestURI.startsWith("/api/")) {
+                    log.warn("페이지 요청에 토큰 없음. 다음 필터로 진행: {}", requestURI);
+                    request.setAttribute("authenticated", false);
+                    filterChain.doFilter(request, response);
+                } else {
+                    log.warn("API 요청에 JWT 토큰이 없음: {}", requestURI);
+                    sendUnauthorizedResponse(request, response, "인증이 필요합니다. Authorization 헤더에 JWT 토큰을 포함해주세요.");
+                }
                 return;
             }
 

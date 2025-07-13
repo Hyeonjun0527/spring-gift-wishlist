@@ -1,9 +1,10 @@
-
+-- 관리자 계정
 -- 이메일: admin@example.com
--- 비밀번호: admin123 (SHA-256 해시: jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=)
+-- 비밀번호: 1234
 INSERT INTO member (email, password, role, created_at) VALUES 
-('admin@example.com', 'jGl25bVBBBW96Qi9Te4V37Fnqchz/Eu4qB9vKrRIqRg=', 'ADMIN', CURRENT_TIMESTAMP);
+('admin@admin.com', 'A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=', 'ADMIN', CURRENT_TIMESTAMP);
 
+-- 테스트용 상품 데이터
 INSERT INTO product (name, price, image_url) VALUES
 ('카카오 라이언 인형', 15000, 'https://example.com/ryan.jpg'),
 ('카카오 어피치 인형', 12000, 'https://example.com/apeach.jpg'),
