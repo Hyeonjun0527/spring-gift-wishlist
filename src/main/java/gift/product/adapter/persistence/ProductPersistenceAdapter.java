@@ -101,7 +101,8 @@ public class ProductPersistenceAdapter implements ProductPersistencePort {
                 .param("imageUrl", product.getImageUrl())
                 .update(keyHolder);
 
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Number key = (Number) keyHolder.getKeys().get("ID");
+        return Objects.requireNonNull(key).longValue();
     }
 
     private void updateProduct(Product product) {

@@ -6,13 +6,11 @@ import gift.common.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
-@Profile("!test")
 @ConditionalOnProperty(
     name = "jwt.enabled", 
     havingValue = "true", 
@@ -21,7 +19,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class AuthorizationAspect implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             RequireAdmin requireAdmin = handlerMethod.getMethodAnnotation(RequireAdmin.class);
@@ -44,4 +42,4 @@ public class AuthorizationAspect implements HandlerInterceptor {
             throw new ForbiddenException("관리자 권한이 필요합니다. 접근이 거부되었습니다.");
         }
     }
-} 
+}

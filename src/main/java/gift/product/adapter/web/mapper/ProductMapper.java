@@ -1,4 +1,4 @@
-package gift.product.application.usecase.mapper;
+package gift.product.adapter.web.mapper;
 
 import gift.product.application.port.in.dto.ProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;

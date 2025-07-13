@@ -3,7 +3,7 @@ package gift.product.adapter.web;
 import gift.common.annotation.Adapter;
 import gift.common.pagination.Page;
 import gift.common.pagination.Pageable;
-import gift.product.application.port.in.*;
+import gift.product.application.port.in.ProductUseCase;
 import gift.product.application.port.in.dto.ProductRequest;
 import gift.product.application.port.in.dto.ProductResponse;
 import jakarta.validation.Valid;
@@ -17,50 +17,40 @@ import java.net.URI;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final AddProductUseCase addProductUseCase;
-    private final GetProductUseCase getProductUseCase;
-    private final GetAllProductsUseCase getAllProductsUseCase;
-    private final UpdateProductUseCase updateProductUseCase;
-    private final DeleteProductUseCase deleteProductUseCase;
+    private final ProductUseCase productUseCase;
 
-    public ProductController(AddProductUseCase addProductUseCase, GetProductUseCase getProductUseCase,
-                             GetAllProductsUseCase getAllProductsUseCase, UpdateProductUseCase updateProductUseCase,
-                             DeleteProductUseCase deleteProductUseCase) {
-        this.addProductUseCase = addProductUseCase;
-        this.getProductUseCase = getProductUseCase;
-        this.getAllProductsUseCase = getAllProductsUseCase;
-        this.updateProductUseCase = updateProductUseCase;
-        this.deleteProductUseCase = deleteProductUseCase;
+    public ProductController(ProductUseCase productUseCase) {
+        this.productUseCase = productUseCase;
     }
 
     @PostMapping
     public ResponseEntity<Void> addProduct(@Valid @RequestBody ProductRequest productRequest) {
-        ProductResponse productResponse = addProductUseCase.addProduct(productRequest);
+        ProductResponse productResponse = productUseCase.addProduct(productRequest);
         return ResponseEntity.created(URI.create("/api/products/" + productResponse.id())).build();
     }
 
     @GetMapping
     public ResponseEntity<Page<ProductResponse>> getProducts(Pageable pageable) {
-        Page<ProductResponse> productResponses = getAllProductsUseCase.getProducts(pageable);
+        Page<ProductResponse> productResponses = productUseCase.getProducts(pageable);
         return ResponseEntity.ok(productResponses);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProduct(@PathVariable("id") Long id) {
-        ProductResponse productResponse = getProductUseCase.getProduct(id);
+        ProductResponse productResponse = productUseCase.getProduct(id);
         return ResponseEntity.ok(productResponse);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateProduct(@PathVariable("id") Long id,
                                               @Valid @RequestBody ProductRequest productRequest) {
-        updateProductUseCase.updateProduct(id, productRequest);
+        productUseCase.updateProduct(id, productRequest);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable("id") Long id) {
-        deleteProductUseCase.deleteProduct(id);
+        productUseCase.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 } 

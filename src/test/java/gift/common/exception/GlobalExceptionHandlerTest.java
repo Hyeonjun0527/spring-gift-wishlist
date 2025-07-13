@@ -2,7 +2,7 @@ package gift.common.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gift.product.adapter.web.ProductController;
-import gift.product.application.port.in.*;
+import gift.product.application.port.in.ProductUseCase;
 import gift.product.application.port.in.dto.ProductRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,15 +30,7 @@ class GlobalExceptionHandlerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private AddProductUseCase addProductUseCase;
-    @MockitoBean
-    private GetProductUseCase getProductUseCase;
-    @MockitoBean
-    private GetAllProductsUseCase getAllProductsUseCase;
-    @MockitoBean
-    private UpdateProductUseCase updateProductUseCase;
-    @MockitoBean
-    private DeleteProductUseCase deleteProductUseCase;
+    private ProductUseCase productUseCase;
 
     @Test
     @DisplayName("MethodArgumentNotValidException - 검증 실패")

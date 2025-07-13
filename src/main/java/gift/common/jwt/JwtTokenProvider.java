@@ -10,7 +10,6 @@ import gift.member.domain.model.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -18,10 +17,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Component
-@Profile("!test")
 @ConditionalOnProperty(
     name = "jwt.enabled", 
-    havingValue = "true", 
+    havingValue = "true",
     matchIfMissing = true
 )
 public class JwtTokenProvider implements JwtTokenPort {
@@ -95,7 +93,7 @@ public class JwtTokenProvider implements JwtTokenPort {
     @Override
     public String getEmailFromToken(String token) {
         TokenValidationResult result = validateToken(token);
-        if (!result.isValid()) {
+        if (result.isNotValid()) {
             throw new IllegalArgumentException("유효하지 않은 토큰: " + result.getErrorMessage());
         }
         return result.getDecodedJWT().getClaim("email").asString();
@@ -104,7 +102,7 @@ public class JwtTokenProvider implements JwtTokenPort {
     @Override
     public Long getMemberIdFromToken(String token) {
         TokenValidationResult result = validateToken(token);
-        if (!result.isValid()) {
+        if (result.isNotValid()) {
             throw new IllegalArgumentException("유효하지 않은 토큰: " + result.getErrorMessage());
         }
         return result.getDecodedJWT().getClaim("memberId").asLong();
@@ -113,7 +111,7 @@ public class JwtTokenProvider implements JwtTokenPort {
     @Override
     public String getTokenTypeFromToken(String token) {
         TokenValidationResult result = validateToken(token);
-        if (!result.isValid()) {
+        if (result.isNotValid()) {
             throw new IllegalArgumentException("유효하지 않은 토큰: " + result.getErrorMessage());
         }
         return result.getDecodedJWT().getClaim("tokenType").asString();
@@ -122,7 +120,7 @@ public class JwtTokenProvider implements JwtTokenPort {
     @Override
     public String getRoleFromToken(String token) {
         TokenValidationResult result = validateToken(token);
-        if (!result.isValid()) {
+        if (result.isNotValid()) {
             throw new IllegalArgumentException("유효하지 않은 토큰: " + result.getErrorMessage());
         }
         return result.getDecodedJWT().getClaim("role").asString();
@@ -153,7 +151,7 @@ public class JwtTokenProvider implements JwtTokenPort {
             return new TokenValidationResult(false, false, errorMessage, null);
         }
 
-        public boolean isValid() { return valid; }
+        public boolean isNotValid() { return !valid; }
         public String getErrorMessage() { return errorMessage; }
         public DecodedJWT getDecodedJWT() { return decodedJWT; }
     }

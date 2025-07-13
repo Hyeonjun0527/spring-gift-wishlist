@@ -1,32 +1,27 @@
 package gift.common.config;
 
 import gift.common.security.AuthorizationAspect;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig {
+@ConditionalOnProperty(
+        name = "admin.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
+public class WebConfig implements WebMvcConfigurer {
 
-    @Configuration
-    @Profile("!test")
-    public static class SecurityWebConfig implements WebMvcConfigurer {
-        
-        private final AuthorizationAspect authorizationAspect;
+    private final AuthorizationAspect authorizationAspect;
 
-        public SecurityWebConfig(AuthorizationAspect authorizationAspect) {
-            this.authorizationAspect = authorizationAspect;
-        }
-
-        @Override
-        public void addInterceptors(InterceptorRegistry registry) {
-            registry.addInterceptor(authorizationAspect);
-        }
+    public WebConfig(AuthorizationAspect authorizationAspect) {
+        this.authorizationAspect = authorizationAspect;
     }
 
-    @Configuration
-    @Profile("test")
-    public static class TestWebConfig implements WebMvcConfigurer {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authorizationAspect);
     }
 } 

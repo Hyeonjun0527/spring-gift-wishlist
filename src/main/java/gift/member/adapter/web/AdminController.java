@@ -1,66 +1,53 @@
 package gift.member.adapter.web;
 
 import gift.common.annotation.RequireAdmin;
-import gift.member.application.port.out.MemberPersistencePort;
-import gift.member.domain.model.Member;
+import gift.member.application.port.in.MemberUseCase;
+import gift.member.application.port.in.dto.CreateMemberRequest;
+import gift.member.application.port.in.dto.MemberResponse;
+import gift.member.application.port.in.dto.UpdateMemberRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    private final MemberPersistencePort memberPersistencePort;
+    private final MemberUseCase memberUseCase;
 
-    public AdminController(MemberPersistencePort memberPersistencePort) {
-        this.memberPersistencePort = memberPersistencePort;
+    public AdminController(MemberUseCase memberUseCase) {
+        this.memberUseCase = memberUseCase;
     }
 
     @RequireAdmin
     @GetMapping("/members")
-    public ResponseEntity<List<Member>> getAllMembers() {
-        List<Member> members = memberPersistencePort.findAll();
+    public ResponseEntity<List<MemberResponse>> getAllMembers() {
+        List<MemberResponse> members = memberUseCase.getAllMembers();
         return ResponseEntity.ok(members);
     }
 
     @RequireAdmin
     @PostMapping("/members")
-    public ResponseEntity<Member> createMember(@RequestBody CreateMemberRequest request) {
-        Member member = Member.create(request.email(), request.password());
-        Member savedMember = memberPersistencePort.save(member);
-        return ResponseEntity.status(201).body(savedMember);
+    public ResponseEntity<Void> createMember(@Valid @RequestBody CreateMemberRequest request) {
+        MemberResponse memberResponse = memberUseCase.createMember(request);
+        return ResponseEntity.created(URI.create("/api/admin/members/" + memberResponse.id())).build();
     }
 
     @RequireAdmin
     @PutMapping("/members/{id}")
-    public ResponseEntity<Member> updateMember(@PathVariable Long id, @RequestBody UpdateMemberRequest request) {
-        Member member = memberPersistencePort.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        
-        Member updatedMember = Member.of(
-                member.getId(),
-                request.email() != null ? request.email() : member.getEmail(),
-                request.password() != null ? request.password() : member.getPassword(),
-                request.role() != null ? request.role() : member.getRole(),
-                member.getCreatedAt()
-        );
-        
-        Member savedMember = memberPersistencePort.save(updatedMember);
-        return ResponseEntity.ok(savedMember);
+    public ResponseEntity<Void> updateMember(@PathVariable Long id, 
+                                           @Valid @RequestBody UpdateMemberRequest request) {
+        memberUseCase.updateMember(id, request);
+        return ResponseEntity.noContent().build();
     }
 
     @RequireAdmin
     @DeleteMapping("/members/{id}")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
-        if (!memberPersistencePort.existsById(id)) {
-            throw new IllegalArgumentException("회원을 찾을 수 없습니다.");
-        }
-        memberPersistencePort.deleteById(id);
+        memberUseCase.deleteMember(id);
         return ResponseEntity.noContent().build();
     }
-
-    public record CreateMemberRequest(String email, String password) {}
-    public record UpdateMemberRequest(String email, String password, gift.member.domain.model.Role role) {}
 } 
