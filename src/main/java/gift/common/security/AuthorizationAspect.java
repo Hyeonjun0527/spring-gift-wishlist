@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.NoSuchElementException;
+
 @Component
 @ConditionalOnProperty(
     name = "jwt.enabled", 
@@ -32,13 +34,21 @@ public class AuthorizationAspect implements HandlerInterceptor {
     }
     
     private void checkAdminPermission(HttpServletRequest request) {
+        boolean isAdminPageRequest = "/admin".equals(request.getRequestURI());
+
         Boolean authenticated = (Boolean) request.getAttribute("authenticated");
         if (authenticated == null || !authenticated) {
+            if (isAdminPageRequest) {
+                throw new NoSuchElementException("페이지를 찾을 수 없습니다.");
+            }
             throw new UnauthorizedException("유효한 인증 자격 증명이 필요합니다.");
         }
         
         String role = (String) request.getAttribute("role");
         if (!"ADMIN".equals(role)) {
+            if (isAdminPageRequest) {
+                throw new NoSuchElementException("페이지를 찾을 수 없습니다.");
+            }
             throw new ForbiddenException("관리자 권한이 필요합니다. 접근이 거부되었습니다.");
         }
     }

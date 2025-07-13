@@ -28,6 +28,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final List<String> SKIP_PATHS = Arrays.asList(
+            "/",
+            "/login",
             "/health",
             "/actuator",
             "/css/",
@@ -63,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = jwtTokenPort.resolveToken(request);
             if (token == null) {
                 log.warn("Authorization 헤더에 JWT 토큰이 없음");
-                sendUnauthorizedResponse(response, "인증이 필요합니다. Authorization 헤더에 JWT 토큰을 포함해주세요.");
+                sendUnauthorizedResponse(request, response, "인증이 필요합니다. Authorization 헤더에 JWT 토큰을 포함해주세요.");
                 return;
             }
 
@@ -71,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (validationResult.isNotValid()) {
                 log.warn("유효하지 않은 JWT 토큰: {}", validationResult.getErrorMessage());
-                sendUnauthorizedResponse(response, validationResult.getErrorMessage());
+                sendUnauthorizedResponse(request, response, validationResult.getErrorMessage());
                 return;
             }
 
@@ -90,14 +92,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             log.error("JWT 인증 중 오류 발생", e);
-            sendUnauthorizedResponse(response, "인증 오류: " + e.getMessage());
+            sendUnauthorizedResponse(request, response, "인증 오류: " + e.getMessage());
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void sendUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+    private void sendUnauthorizedResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+        String acceptHeader = request.getHeader("Accept");
+
+        if (acceptHeader != null && acceptHeader.contains("text/html")) {
+            response.sendRedirect("/login");
+            return;
+        }
+
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
@@ -110,6 +119,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean shouldSkipFilter(String requestURI) {
-        return SKIP_PATHS.stream().anyMatch(requestURI::startsWith);
+        return SKIP_PATHS.stream().anyMatch(p -> {
+            if ("/".equals(p)) {
+                return requestURI.equals("/");
+            } else if (p.endsWith("/")) {
+                return requestURI.startsWith(p);
+            }
+            return p.equals(requestURI);
+        });
     }
 }

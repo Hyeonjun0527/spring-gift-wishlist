@@ -15,7 +15,6 @@ public record ProductRequest(
         @Min(value = 1, message = PRICE_MIN_MESSAGE)
         int price,
 
-        @NotBlank(message = NOT_BLANK_MESSAGE)
         String imageUrl
 ) {
         public static ProductRequest of(String name, int price, String imageUrl) {

@@ -2,7 +2,7 @@ package gift.common.config;
 
 import gift.common.annotation.LoginMember;
 import gift.member.application.port.in.MemberUseCase;
-import gift.member.domain.model.Member;
+import gift.member.application.port.in.dto.MemberResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -23,7 +23,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(LoginMember.class) &&
-                parameter.getParameterType().equals(Member.class);
+                parameter.getParameterType().equals(MemberResponse.class);
     }
 
     @Override
