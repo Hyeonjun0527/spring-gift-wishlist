@@ -1,6 +1,7 @@
 package gift.member.application.port.in;
 
 import gift.member.application.port.in.dto.*;
+import gift.member.domain.model.Member;
 
 import java.util.List;
 
@@ -14,4 +15,5 @@ public interface MemberUseCase {
     void deleteMember(Long id);
 
     MemberResponse getMemberById(Long memberId);
+    Member getMemberByEmail(String email);
 } 

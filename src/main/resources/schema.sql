@@ -17,6 +17,7 @@ CREATE TABLE Wish (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     member_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
+    quantity INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES Member(id),
     FOREIGN KEY (product_id) REFERENCES Product(id),

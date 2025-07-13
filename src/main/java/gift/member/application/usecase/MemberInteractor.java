@@ -111,6 +111,11 @@ public class MemberInteractor implements MemberUseCase {
         return MemberMapper.toResponse(memberPersistencePort.findById(memberId).orElseThrow());
     }
 
+    @Override
+    public Member getMemberByEmail(String email) {
+        return memberPersistencePort.findByEmail(email).orElse(null);
+    }
+
     private AuthResponse createAuthResponse(Long memberId, String email, gift.member.domain.model.Role role) {
         String accessToken = jwtTokenPort.createAccessToken(memberId, email, role);
         return new AuthResponse(accessToken);

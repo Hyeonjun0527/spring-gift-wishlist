@@ -1,37 +1,42 @@
 package gift.wish.domain.model;
 
-import java.time.LocalDateTime;
+import gift.member.domain.model.Member;
+import gift.product.domain.model.Product;
 
 public class Wish {
-    private final long id;
-    private final long memberId;
-    private final long productId;
-    private final LocalDateTime createdAt;
+    private final Long id;
+    private final Member member;
+    private final Product product;
+    private int quantity;
 
-    private Wish(long id, long memberId, long productId, LocalDateTime createdAt) {
+    private Wish(Long id, Member member, Product product, int quantity) {
         this.id = id;
-        this.memberId = memberId;
-        this.productId = productId;
-        this.createdAt = createdAt;
+        this.member = member;
+        this.product = product;
+        this.quantity = quantity;
     }
 
-    public static Wish of(long id, long memberId, long productId, LocalDateTime createdAt) {
-        return new Wish(id, memberId, productId, createdAt);
+    public static Wish of(Long id, Member member, Product product, int quantity) {
+        return new Wish(id, member, product, quantity);
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public long getMemberId() {
-        return memberId;
+    public Member getMember() {
+        return member;
     }
 
-    public long getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }
