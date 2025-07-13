@@ -108,7 +108,9 @@ public class MemberInteractor implements MemberUseCase {
 
     @Override
     public MemberResponse getMemberById(Long memberId) {
-        return MemberMapper.toResponse(memberPersistencePort.findById(memberId).orElseThrow());
+        Member member = memberPersistencePort.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다. id: " + memberId));
+        return MemberMapper.toResponse(member);
     }
 
     @Override
