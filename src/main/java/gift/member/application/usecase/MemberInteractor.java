@@ -24,8 +24,7 @@ public class MemberInteractor implements MemberUseCase {
     public MemberInteractor(
             MemberPersistencePort memberPersistencePort,
             JwtTokenPort jwtTokenPort,
-            PasswordEncoder passwordEncoder,
-            MemberMapper memberMapper) {
+            PasswordEncoder passwordEncoder) {
         this.memberPersistencePort = memberPersistencePort;
         this.jwtTokenPort = jwtTokenPort;
         this.passwordEncoder = passwordEncoder;
