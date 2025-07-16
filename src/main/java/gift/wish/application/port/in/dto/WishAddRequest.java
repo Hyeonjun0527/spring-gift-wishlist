@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 
 public record WishAddRequest(
         @NotNull
+        @Min(1)
         Long productId,
 
+        @NotNull
         @Min(1)
         int quantity
 ) {

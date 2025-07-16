@@ -1,4 +1,4 @@
-package gift.member.adapter.persistence.persistenceAdapter;
+package gift.member.adapter.persistence.adapter;
 
 import gift.member.application.port.out.MemberPersistencePort;
 import gift.member.domain.model.Member;

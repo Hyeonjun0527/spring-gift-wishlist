@@ -1,5 +1,6 @@
 package gift.wish.application.usecase;
 
+import gift.common.exception.UnauthorizedException;
 import gift.common.pagination.Page;
 import gift.common.pagination.Pageable;
 import gift.member.application.port.out.MemberPersistencePort;
@@ -45,9 +46,9 @@ public class WishInteractor implements WishUseCase {
                 })
                 .orElseGet(() -> {
                     Member member = memberPersistencePort.findById(memberId)
-                            .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                            .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
                     Product product = productPersistencePort.findById(request.productId())
-                            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                            .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
                     Wish newWish = Wish.of(null, member, product, request.quantity());
                     return WishMapper.toResponse(wishPersistencePort.save(newWish));
                 });
@@ -56,9 +57,9 @@ public class WishInteractor implements WishUseCase {
     @Override
     public WishResponse updateWishQuantity(Long wishId, int quantity, Long memberId) {
         Wish wish = wishPersistencePort.findById(wishId)
-                .orElseThrow(() -> new IllegalArgumentException("Wish not found"));
+                .orElseThrow(() -> new IllegalArgumentException("위시리스트를 찾을 수 없습니다."));
         if (!wish.getMember().id().equals(memberId)) {
-            throw new SecurityException("Not authorized to update this wish");
+            throw new UnauthorizedException("위시리스트를 수정할 수 없습니다.");
         }
         wish.updateQuantity(quantity);
         return WishMapper.toResponse(wishPersistencePort.save(wish));
@@ -67,9 +68,9 @@ public class WishInteractor implements WishUseCase {
     @Override
     public void deleteWish(Long wishId, Long memberId) {
         Wish wish = wishPersistencePort.findById(wishId)
-                .orElseThrow(() -> new IllegalArgumentException("Wish not found"));
+                .orElseThrow(() -> new IllegalArgumentException("위시리스트를 찾을 수 없습니다."));
         if (!wish.getMember().id().equals(memberId)) {
-            throw new SecurityException("Not authorized to delete this wish");
+            throw new UnauthorizedException("위시리스트를 삭제할 수 없습니다.");
         }
         wishPersistencePort.deleteById(wishId);
     }

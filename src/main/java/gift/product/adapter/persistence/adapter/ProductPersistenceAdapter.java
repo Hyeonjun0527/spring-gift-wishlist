@@ -1,4 +1,4 @@
-package gift.product.adapter.persistence;
+package gift.product.adapter.persistence.adapter;
 
 import gift.common.annotation.Adapter;
 import gift.common.pagination.Page;

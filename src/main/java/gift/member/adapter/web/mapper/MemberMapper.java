@@ -1,27 +1,9 @@
 package gift.member.adapter.web.mapper;
 
-import gift.member.application.port.in.dto.CreateMemberRequest;
 import gift.member.application.port.in.dto.MemberResponse;
-import gift.member.application.port.in.dto.UpdateMemberRequest;
 import gift.member.domain.model.Member;
-import org.springframework.stereotype.Component;
 
-@Component
 public class MemberMapper {
-
-    public static Member toEntity(CreateMemberRequest request) {
-        return Member.create(request.email(), request.password());
-    }
-
-    public static Member toEntity(Member existingMember, UpdateMemberRequest request) {
-        return Member.of(
-                existingMember.id(),
-                request.email() == null ? existingMember.email() : request.email(),
-                request.password() == null ? existingMember.password() : request.password(),
-                request.role() == null ? existingMember.role() : request.role(),
-                existingMember.createdAt()
-        );
-    }
 
     public static MemberResponse toResponse(Member member) {
         return new MemberResponse(

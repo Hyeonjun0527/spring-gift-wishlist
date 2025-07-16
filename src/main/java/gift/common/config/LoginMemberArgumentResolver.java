@@ -34,9 +34,8 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
         Long memberId = (Long) Objects.requireNonNull(request).getAttribute("memberId");
-        String email = (String) request.getAttribute("email");
 
-        if (memberId == null || email == null) {
+        if (memberId == null) {
             throw new IllegalArgumentException("인증된 사용자 정보를 찾을 수 없습니다.");
         }
 

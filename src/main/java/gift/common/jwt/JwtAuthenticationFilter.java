@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -27,21 +28,21 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-    private static final List<String> SKIP_PATHS = Arrays.asList(
+    private static final List<String> PUBLIC_PATTERNS = Arrays.asList(
             "/",
             "/login",
-            // "/admin", // 관리자 페이지는 필터에서 직접 처리하도록 SKIP_PATHS에서 제외
             "/health",
-            "/actuator",
-            "/css/",
-            "/js/",
-            "/images/",
+            "/actuator/**",
+            "/css/**",
+            "/js/**",
+            "/images/**",
             "/favicon.ico",
             "/api/members/register",
             "/api/members/login",
-            "/h2-console",
-            "/h2-console/"
+            "/h2-console/**"
     );
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     private final JwtTokenPort jwtTokenPort;
     private final ObjectMapper objectMapper;
 
@@ -76,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                 } else {
                     log.warn("API 요청에 JWT 토큰이 없음: {}", requestURI);
-                    sendUnauthorizedResponse(request, response, "인증이 필요합니다. Authorization 헤더에 JWT 토큰을 포함해주세요.");
+                    sendUnAuthenticationResponse(request, response, "인증이 필요합니다. Authorization 헤더에 JWT 토큰을 포함해주세요.");
                 }
                 return;
             }
@@ -85,7 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (validationResult.isNotValid()) {
                 log.warn("유효하지 않은 JWT 토큰: {}", validationResult.getErrorMessage());
-                sendUnauthorizedResponse(request, response, validationResult.getErrorMessage());
+                sendUnAuthenticationResponse(request, response, validationResult.getErrorMessage());
                 return;
             }
 
@@ -104,14 +105,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             log.error("JWT 인증 중 오류 발생", e);
-            sendUnauthorizedResponse(request, response, "인증 오류: " + e.getMessage());
+            sendUnAuthenticationResponse(request, response, "인증 오류: " + e.getMessage());
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void sendUnauthorizedResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+    private void sendUnAuthenticationResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
         String acceptHeader = request.getHeader("Accept");
 
         if (acceptHeader != null && acceptHeader.contains("text/html")) {
@@ -125,19 +126,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.UNAUTHORIZED, message);
-        problemDetail.setTitle("Unauthorized");
+        problemDetail.setTitle("Authentication Failed");
 
         response.getWriter().write(objectMapper.writeValueAsString(problemDetail));
     }
 
     private boolean shouldSkipFilter(String requestURI) {
-        return SKIP_PATHS.stream().anyMatch(p -> {
-            if ("/".equals(p)) {
-                return requestURI.equals("/");
-            } else if (p.endsWith("/")) {
-                return requestURI.startsWith(p);
-            }
-            return p.equals(requestURI);
-        });
+        return PUBLIC_PATTERNS.stream()
+                .anyMatch(pattern -> pathMatcher.match(pattern, requestURI));
     }
 }

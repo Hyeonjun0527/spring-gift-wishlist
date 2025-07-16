@@ -1,12 +1,11 @@
-package gift.wish.adapter.persistence;
+package gift.wish.adapter.persistence.adapter;
 
 import gift.common.annotation.Adapter;
 import gift.common.pagination.Page;
 import gift.common.pagination.PageImpl;
 import gift.common.pagination.Pageable;
-import gift.member.application.port.out.MemberPersistencePort;
 import gift.member.domain.model.Member;
-import gift.product.application.port.out.ProductPersistencePort;
+import gift.member.domain.model.Role;
 import gift.product.domain.model.Product;
 import gift.wish.application.port.out.WishPersistencePort;
 import gift.wish.domain.model.Wish;
@@ -23,48 +22,69 @@ import java.util.Optional;
 public class WishPersistenceAdapter implements WishPersistencePort {
 
     private final JdbcClient jdbcClient;
-    private final MemberPersistencePort memberPersistencePort;
-    private final ProductPersistencePort productPersistencePort;
-    private final RowMapper<Wish> WISH_ROW_MAPPER;
 
-    public WishPersistenceAdapter(JdbcClient jdbcClient, MemberPersistencePort memberPersistencePort, ProductPersistencePort productPersistencePort) {
+    private static final String WISH_WITH_DETAILS_BASE_SQL = """
+            SELECT w.id         AS wish_id,
+                   w.quantity,
+                   m.id         AS member_id,
+                   m.email,
+                   m.password,
+                   m.role,
+                   m.created_at,
+                   p.id         AS product_id,
+                   p.name,
+                   p.price,
+                   p.image_url
+            FROM WISH w
+                     JOIN MEMBER m ON w.member_id = m.id
+                     JOIN PRODUCT p ON w.product_id = p.id
+            """;
+
+    private final RowMapper<Wish> WISH_WITH_DETAILS_ROW_MAPPER = (rs, rowNum) -> {
+        Member member = Member.of(
+                rs.getLong("member_id"),
+                rs.getString("email"),
+                rs.getString("password"),
+                Role.valueOf(rs.getString("role")),
+                rs.getTimestamp("created_at").toLocalDateTime()
+        );
+
+        Product product = Product.of(
+                rs.getLong("product_id"),
+                rs.getString("name"),
+                rs.getInt("price"),
+                rs.getString("image_url")
+        );
+
+        return Wish.of(
+                rs.getLong("wish_id"),
+                member,
+                product,
+                rs.getInt("quantity")
+        );
+    };
+
+    public WishPersistenceAdapter(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
-        this.memberPersistencePort = memberPersistencePort;
-        this.productPersistencePort = productPersistencePort;
-        this.WISH_ROW_MAPPER = (rs, rowNum) -> {
-            Long memberId = rs.getLong("member_id");
-            Long productId = rs.getLong("product_id");
-
-            Member member = memberPersistencePort.findById(memberId)
-                    .orElseThrow(() -> new IllegalStateException("Member not found with id: " + memberId));
-            Product product = productPersistencePort.findById(productId)
-                    .orElseThrow(() -> new IllegalStateException("Product not found with id: " + productId));
-            return Wish.of(
-                    rs.getLong("id"),
-                    member,
-                    product,
-                    rs.getInt("quantity")
-            );
-        };
     }
 
     @Override
     public Page<Wish> findByMemberId(Long memberId, Pageable pageable) {
         int totalRow = getWishTotalRowByMemberId(memberId);
-        int start = pageable.getOffset();
-        if (start > totalRow) {
+        int offset = pageable.getOffset();
+        if (offset >= totalRow) {
             return new PageImpl<>(Collections.emptyList(), pageable, totalRow);
         }
-        List<Wish> wishes = jdbcClient.sql("""
-                SELECT id, member_id, product_id, quantity
-                FROM WISH
-                WHERE member_id = :memberId
+        String sql = WISH_WITH_DETAILS_BASE_SQL + """
+                WHERE w.member_id = :memberId
+                ORDER BY w.id DESC
                 LIMIT :limit OFFSET :offset
-            """)
+                """;
+        List<Wish> wishes = jdbcClient.sql(sql)
                 .param("memberId", memberId)
                 .param("limit", pageable.getSize())
-                .param("offset", start)
-                .query(WISH_ROW_MAPPER)
+                .param("offset", offset)
+                .query(WISH_WITH_DETAILS_ROW_MAPPER)
                 .list();
         return new PageImpl<>(wishes, pageable, totalRow);
     }
@@ -118,9 +138,10 @@ public class WishPersistenceAdapter implements WishPersistencePort {
 
     @Override
     public Optional<Wish> findById(Long id) {
-        return jdbcClient.sql("SELECT id, member_id, product_id, quantity FROM WISH WHERE id = :id")
+        String sql = WISH_WITH_DETAILS_BASE_SQL + " WHERE w.id = :id";
+        return jdbcClient.sql(sql)
                 .param("id", id)
-                .query(WISH_ROW_MAPPER)
+                .query(WISH_WITH_DETAILS_ROW_MAPPER)
                 .optional();
     }
 
@@ -133,10 +154,11 @@ public class WishPersistenceAdapter implements WishPersistencePort {
 
     @Override
     public Optional<Wish> findByMemberIdAndProductId(Long memberId, Long productId) {
-        return jdbcClient.sql("SELECT id, member_id, product_id, quantity FROM WISH WHERE member_id = :memberId AND product_id = :productId")
+        String sql = WISH_WITH_DETAILS_BASE_SQL + " WHERE w.member_id = :memberId AND w.product_id = :productId";
+        return jdbcClient.sql(sql)
                 .param("memberId", memberId)
                 .param("productId", productId)
-                .query(WISH_ROW_MAPPER)
+                .query(WISH_WITH_DETAILS_ROW_MAPPER)
                 .optional();
     }
 }
